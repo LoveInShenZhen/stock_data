@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from sz.stock_data.calendar.trade_calendar import TradeCalendar
-import colorama
 import logging
+
+import colorama
+
+from sz.stock_data.stock_pool.hs300 import HS300
 
 colorama.init(autoreset = True)
 logging.basicConfig(
@@ -15,9 +17,11 @@ data_dir = '/Volumes/USBDATA/stock_data'
 
 
 def test():
-    cal = TradeCalendar(data_dir = data_dir)
-    cal.update()
+    db = HS300(data_dir = data_dir)
+    db.update()
+    db.load()
     logging.info(colorama.Fore.GREEN + '更新完毕')
+    logging.info('\n' + colorama.Fore.LIGHTYELLOW_EX + db.dataframe.dtypes.to_string())
 
 
 if __name__ == '__main__':
