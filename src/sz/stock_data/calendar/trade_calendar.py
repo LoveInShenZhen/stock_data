@@ -76,6 +76,18 @@ class TradeCalendar(object):
 
         return self.dataframe
 
+    def latest_trade_day(self) -> date:
+        """
+        返回距离当天最近的一个交易日的日期. 如果当天是交易日,则返回当天
+        :return:
+        """
+        today = date.today()
+        row = self.dataframe.loc[today]
+        if row.loc['is_open']:
+            return today
+        else:
+            return row.loc['pretrade_date'].date()
+
     @staticmethod
     def end_date() -> str:
         today = date.today()

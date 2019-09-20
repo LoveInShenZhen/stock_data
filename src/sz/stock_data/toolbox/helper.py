@@ -20,3 +20,12 @@ def need_update(fpath: str, outdate_days: int) -> bool:
             return True
         else:
             return False
+
+
+def mtime_of_file(fpath: str) -> date:
+    """
+    获取文件的最后修改日期
+    :param fpath:
+    :return:
+    """
+    return date.fromtimestamp(os.stat(fpath).st_mtime)

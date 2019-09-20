@@ -24,6 +24,7 @@ def bao_login():
 
 def bao_logout():
     bao.logout()
+    logging.info(colorama.Fore.GREEN + 'baostock logout success!')
 
 
 def ts_code(code: str) -> str:

@@ -64,6 +64,19 @@ class StockBasic(object):
 
         return self.dataframe
 
+    def prepare(self):
+        if self.dataframe is None:
+            self.load()
+
+    def list_date_of(self, ts_code: str) -> date:
+        """
+        返回指定证券的上市日期
+        :param ts_code:
+        :return:
+        """
+        self.prepare()
+        return self.dataframe.loc[ts_code].loc['list_date'].date()
+
     @staticmethod
     def ts_stock_basic() -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().stock_basic(

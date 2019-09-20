@@ -41,6 +41,7 @@ class StockData(object, metaclass = SingletonMeta):
         """
         if self._trade_calendar is None:
             self._trade_calendar = TradeCalendar(self._data_dir)
+            self._trade_calendar.load()
 
         return self._trade_calendar
 
@@ -52,6 +53,7 @@ class StockData(object, metaclass = SingletonMeta):
         """
         if self._stock_basic is None:
             self._stock_basic = StockBasic(self._data_dir)
+            self._stock_basic.load()
 
         return self._stock_basic
 
@@ -63,6 +65,7 @@ class StockData(object, metaclass = SingletonMeta):
         """
         if self._stock_company is None:
             self._stock_company = StockCompany(self.data_dir)
+            self._stock_company.load()
 
         return self._stock_company
 
@@ -74,6 +77,7 @@ class StockData(object, metaclass = SingletonMeta):
         """
         if self._hs300 is None:
             self._hs300 = HS300(self._data_dir)
+            self._hs300.load()
 
         return self._hs300
 
@@ -85,5 +89,6 @@ class StockData(object, metaclass = SingletonMeta):
         """
         if self._zz500 is None:
             self._zz500 = ZZ500(self._data_dir)
+            self._zz500.load()
 
         return self._zz500
