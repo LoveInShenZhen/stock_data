@@ -6,6 +6,7 @@ import baostock as bao
 import colorama
 import pandas as pd
 
+from sz.stock_data.toolbox.data_provider import ts_code
 from sz.stock_data.toolbox.helper import need_update
 
 
@@ -65,11 +66,8 @@ class ZZ500(object):
         获取沪深300成分股信息
         :return:
         """
-        lg = bao.login()
-        logging.debug(
-            colorama.Fore.BLUE + 'baostock login => error_code: %s error_msg: %s' % (lg.error_code, lg.error_msg))
         df = bao.query_zz500_stocks().get_data()
-        bao.logout()
+        df['code'] = df['code'].apply(lambda x: ts_code(x))
         df.set_index(keys = 'code', drop = False, inplace = True)
         logging.info(colorama.Fore.YELLOW + '获取中证500成分股信息')
         return df
