@@ -59,3 +59,4 @@ def bao_code(code: str) -> str:
         return '%s.%s' % (stock_code[0:6], stock_code[7:])
     else:
         raise Exception('无效的证券代码: %s' % code)
+

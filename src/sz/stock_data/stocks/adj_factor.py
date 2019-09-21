@@ -5,18 +5,19 @@ from typing import Union, List
 import baostock as bao
 import colorama
 import pandas as pd
+import numpy as np
 
 from datetime import date, timedelta
+
+from ratelimiter import RateLimiter
+
 from sz.stock_data.stock_data import StockData
-from sz.stock_data.toolbox.data_provider import ts_code
+from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
+from sz.stock_data.toolbox.datetime import ts_date
 from sz.stock_data.toolbox.helper import mtime_of_file
 
 
-class StockDaily(object):
-    """
-    baostock 能获取2006-01-01至当前时间的数据
-    """
-    base_date = date(year = 2006, month = 1, day = 1)
+class AdjFactor(object):
 
     def __init__(self, data_dir: str, stock_code: str):
         self.data_dir = data_dir
@@ -28,7 +29,7 @@ class StockDaily(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'day.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'adj_factor.csv')
 
     def _setup_dir_(self):
         """
@@ -56,12 +57,15 @@ class StockDaily(object):
         if os.path.exists(self.file_path()):
             self.dataframe = pd.read_csv(
                 filepath_or_buffer = self.file_path(),
-                parse_dates = ['date']
+                parse_dates = ['trade_date'],
+                dtype = {
+                    'adj_factor': np.float64
+                }
             )
-            self.dataframe.set_index(keys = 'date', drop = False, inplace = True)
+            self.dataframe.set_index(keys = 'trade_date', drop = False, inplace = True)
             self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地日线数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地复权因子数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -75,18 +79,16 @@ class StockDaily(object):
         计算本次更新的起始日期
         :return:
         """
-        if self.dataframe is None:
-            self.load()
+        self.prepare()
 
         if self.dataframe.empty:
-            return self.base_date
+            return StockData().stock_basic.list_date_of(self.stock_code)
         else:
-            return self.dataframe[-1].loc['date'].date() + timedelta(days = 1)
+            return self.dataframe[-1].loc['trade_date'].date() + timedelta(days = 1)
 
     def update(self):
         self._setup_dir_()
-        if self.dataframe is None:
-            self.load()
+        self.prepare()
 
         if self.should_update():
             start_date: date = max(self.start_date(), StockData().stock_basic.list_date_of(self.stock_code))
@@ -98,23 +100,7 @@ class StockDaily(object):
             while start_date <= last_trade_day:
                 end_date = start_date + step_days
                 end_date = min(end_date, last_trade_day)
-                rs = bao.query_history_k_data_plus(
-                    code = self.stock_code,
-                    start_date = str(start_date),
-                    end_date = str(end_date),
-                    frequency = 'd',
-                    fields = 'date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,peTTM,psTTM,pcfNcfTTM,pbMRQ,isST',
-                    adjustflag = '3'
-                )
-                df = rs.get_data()
-                # logging.debug(colorama.Fore.GREEN + '\n' + df.to_string())
-                df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
-                df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
-                df['code'] = df['code'].apply(lambda x: ts_code(x))
-                df.set_index(keys = 'date', drop = False, inplace = True)
-                logging.debug(
-                    colorama.Fore.YELLOW + '下载 %s 日线数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
-
+                df = self.ts_adj_factor(start_date = start_date, end_date = end_date)
                 df_list.append(df)
                 start_date = end_date + timedelta(days = 1)
 
@@ -125,7 +111,22 @@ class StockDaily(object):
                 path_or_buf = self.file_path(),
                 index = False
             )
+
             logging.info(
-                colorama.Fore.YELLOW + '%s 日线数据更新到: %s path: %s' % (self.stock_code, str(end_date), self.file_path()))
+                colorama.Fore.YELLOW + '%s 复权因子数据更新到: %s path: %s' % (
+                    self.stock_code, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '%s 日线数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '%s 复权因子数据无须更新' % self.stock_code)
+
+    @RateLimiter(max_calls = 2, period = 1.5)
+    def ts_adj_factor(self, start_date: date, end_date: date) -> pd.DataFrame:
+        df: pd.DataFrame = ts_pro_api().adj_factor(
+            ts_code = self.stock_code,
+            start_date = ts_date(start_date),
+            end_date = ts_date(end_date)
+        )
+        df['trade_date'] = pd.to_datetime(df['trade_date'], format = '%Y%m%d')
+        df.set_index(keys = 'trade_date', drop = False, inplace = True)
+        df.sort_index(inplace = True)
+        logging.info(colorama.Fore.YELLOW + '下载 %s 复权因子数据: %s -- %s' % (self.stock_code, start_date, end_date))
+        return df

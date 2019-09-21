@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime, date
 
 
 def yyyymmdd_date_parser(x):
@@ -13,3 +14,7 @@ def yyyymmdd_date_parser(x):
         return pd.datetime.strptime(item, "%Y%m%d")
     else:
         return np.nan
+
+
+def ts_date(day: date) -> str:
+    return day.strftime('%Y%m%d')

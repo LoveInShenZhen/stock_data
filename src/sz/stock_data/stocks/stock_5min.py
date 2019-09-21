@@ -81,8 +81,7 @@ class Stock5min(object):
         计算本次更新的起始日期
         :return:
         """
-        if self.dataframe is None:
-            self.load()
+        self.prepare()
 
         if self.dataframe.empty:
             return self.base_date
@@ -91,8 +90,7 @@ class Stock5min(object):
 
     def update(self):
         self._setup_dir_()
-        if self.dataframe is None:
-            self.load()
+        self.prepare()
 
         if self.should_update():
             start_date: date = max(self.start_date(), StockData().stock_basic.list_date_of(self.stock_code))
@@ -131,7 +129,7 @@ class Stock5min(object):
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
-            self.dataframe.sort_index()
+            self.dataframe.sort_index(inplace = True)
 
             self.dataframe.to_csv(
                 path_or_buf = self.file_path(),
