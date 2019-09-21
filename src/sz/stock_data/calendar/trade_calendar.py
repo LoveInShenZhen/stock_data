@@ -7,9 +7,9 @@ import colorama
 import numpy as np
 import pandas as pd
 from pandas import Timestamp
-from ratelimiter import RateLimiter
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
+from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
 class TradeCalendar(object):
@@ -122,7 +122,7 @@ class TradeCalendar(object):
         return '%s1231' % today.year
 
     @staticmethod
-    @RateLimiter(max_calls = 2, period = 1.5)
+    @ts_rate_limiter
     def ts_trade_cal(start_date: str, end_date: str) -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().trade_cal(
             exchange = 'SSE',

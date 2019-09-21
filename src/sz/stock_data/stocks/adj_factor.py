@@ -1,20 +1,17 @@
 import logging
 import os
+from datetime import date, timedelta
 from typing import Union, List
 
-import baostock as bao
 import colorama
-import pandas as pd
 import numpy as np
-
-from datetime import date, timedelta
-
-from ratelimiter import RateLimiter
+import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
 from sz.stock_data.toolbox.datetime import ts_date
 from sz.stock_data.toolbox.helper import mtime_of_file
+from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
 class AdjFactor(object):
@@ -118,7 +115,7 @@ class AdjFactor(object):
         else:
             logging.info(colorama.Fore.BLUE + '%s 复权因子数据无须更新' % self.stock_code)
 
-    @RateLimiter(max_calls = 2, period = 1.5)
+    @ts_rate_limiter
     def ts_adj_factor(self, start_date: date, end_date: date) -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().adj_factor(
             ts_code = self.stock_code,

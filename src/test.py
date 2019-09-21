@@ -10,6 +10,8 @@ from sz.stock_data.stocks.adj_factor import AdjFactor
 from sz.stock_data.stocks.money_flow import MoneyFlow
 from sz.stock_data.stocks.stock_5min import Stock5min
 from sz.stock_data.stocks.stock_daily import StockDaily
+from sz.stock_data.stocks.top10_floatholders import Top10FloatHolders
+from sz.stock_data.stocks.top10_holders import Top10Holders
 from sz.stock_data.toolbox.data_provider import bao_login, bao_logout
 
 colorama.init(autoreset = True)
@@ -28,6 +30,8 @@ def test():
     Stock5min(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     AdjFactor(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     MoneyFlow(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    Top10Holders(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    Top10FloatHolders(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 

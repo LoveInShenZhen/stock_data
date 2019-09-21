@@ -1,15 +1,11 @@
 import logging
 import os
+from datetime import date, timedelta
 from typing import Union, List
 
-import baostock as bao
 import colorama
-import pandas as pd
 import numpy as np
-
-from datetime import date, timedelta
-
-from ratelimiter import RateLimiter
+import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
@@ -18,7 +14,7 @@ from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
-class MoneyFlow(object):
+class Top10FloatHolders(object):
 
     def __init__(self, data_dir: str, stock_code: str):
         self.data_dir = data_dir
@@ -30,7 +26,7 @@ class MoneyFlow(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'money_flow.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'top10_float_holders.csv')
 
     def _setup_dir_(self):
         """
@@ -58,15 +54,13 @@ class MoneyFlow(object):
         if os.path.exists(self.file_path()):
             self.dataframe = pd.read_csv(
                 filepath_or_buffer = self.file_path(),
-                parse_dates = ['trade_date'],
+                parse_dates = ['ann_date', 'end_date'],
                 dtype = {
-                    'adj_factor': np.float64
+                    'hold_amount': np.float64
                 }
             )
-            self.dataframe.set_index(keys = 'trade_date', drop = False, inplace = True)
-            self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地个股资金流向数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地前十大流通股东数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -85,19 +79,22 @@ class MoneyFlow(object):
         if self.dataframe.empty:
             return StockData().stock_basic.list_date_of(self.stock_code)
         else:
-            return self.dataframe[-1].loc['trade_date'].date() + timedelta(days = 1)
+            return self.dataframe[-1].loc['end_date'].date() + timedelta(days = 1)
 
     @ts_rate_limiter
-    def ts_money_flow(self, start_date: date, end_date: date) -> pd.DataFrame:
-        df: pd.DataFrame = ts_pro_api().moneyflow(
+    def ts_top10_holders(self, start_date: date, end_date: date) -> pd.DataFrame:
+        df: pd.DataFrame = ts_pro_api().top10_floatholders(
             ts_code = self.stock_code,
             start_date = ts_date(start_date),
             end_date = ts_date(end_date)
         )
-        df['trade_date'] = pd.to_datetime(df['trade_date'], format = '%Y%m%d')
-        df.set_index(keys = 'trade_date', drop = False, inplace = True)
-        df.sort_index(inplace = True)
-        logging.info(colorama.Fore.YELLOW + '下载 %s 个股资金流向数据: %s -- %s' % (self.stock_code, start_date, end_date))
+        if not df.empty:
+            df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
+            df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
+            df.sort_values(by = 'end_date', inplace = True)
+            logging.info(colorama.Fore.YELLOW + '下载 %s 前十大流通股东数据: %s -- %s' % (self.stock_code, start_date, end_date))
+        else:
+            logging.info(colorama.Fore.YELLOW + '%s 前十大流通股东数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
         return df
 
     def update(self):
@@ -109,17 +106,17 @@ class MoneyFlow(object):
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
-            step_days = timedelta(days = 3000)
+            step_days = timedelta(days = 365)
 
             while start_date <= last_trade_day:
                 end_date = start_date + step_days
                 end_date = min(end_date, last_trade_day)
-                df = self.ts_money_flow(start_date = start_date, end_date = end_date)
+                df = self.ts_top10_holders(start_date = start_date, end_date = end_date)
                 df_list.append(df)
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
-            self.dataframe.sort_index(inplace = True)
+            self.dataframe.sort_values(by = 'end_date', inplace = True)
 
             self.dataframe.to_csv(
                 path_or_buf = self.file_path(),
@@ -127,7 +124,7 @@ class MoneyFlow(object):
             )
 
             logging.info(
-                colorama.Fore.YELLOW + '%s 个股资金流向数据更新到: %s path: %s' % (
+                colorama.Fore.YELLOW + '%s 前十大流通股东数据更新到: %s path: %s' % (
                     self.stock_code, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '%s 个股资金流向数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '%s 前十大流通股东数据无须更新' % self.stock_code)
