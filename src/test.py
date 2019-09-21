@@ -23,7 +23,7 @@ def test():
 
     StockDaily(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
-    logging.info(colorama.Fore.GREEN + '更新完毕')
+    logging.info(colorama.Fore.YELLOW + '更新完毕')
 
 
 if __name__ == '__main__':

@@ -76,17 +76,45 @@ class TradeCalendar(object):
 
         return self.dataframe
 
+    def prepare(self):
+        if self.dataframe is None:
+            self.load()
+
     def latest_trade_day(self) -> date:
         """
-        返回距离当天最近的一个交易日的日期. 如果当天是交易日,则返回当天
+        返回距离当天之前最近的一个交易日的日期. 如果当天是交易日,则返回当天
         :return:
         """
+        self.prepare()
         today = date.today()
         row = self.dataframe.loc[today]
         if row.loc['is_open']:
             return today
         else:
             return row.loc['pretrade_date'].date()
+
+    def next_n_trade_day(self, base_date: date, n: int, last_date: Union[None, date] = None) -> date:
+        """
+        返回 base_date 后第n个交易日的日期.
+        :param last_date:
+        :param base_date:
+        :param n:
+        :return:
+        """
+        self.prepare()
+        df: pd.DataFrame = self.dataframe
+        df = df[(df['cal_date'] >= str(base_date)) & (df['is_open'] == True)]
+        rows_count = df.shape[0]
+        row_index = min(rows_count - 1, n)
+        day = df.iloc[row_index].loc['cal_date'].date()
+        if last_date is None:
+            return day
+        else:
+            latest_day = self.latest_trade_day()
+            if day <= latest_day:
+                return day
+            else:
+                return latest_day
 
     @staticmethod
     def end_date() -> str:

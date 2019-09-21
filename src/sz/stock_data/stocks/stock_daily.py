@@ -117,6 +117,8 @@ class StockDaily(object):
                 index = False
             )
             logging.info(colorama.Fore.YELLOW + '%s 日线数据更新到: %s path: %s' % (self.stock_code, str(end_date), self.file_path()))
+        else:
+            logging.info(colorama.Fore.BLUE + '%s 日线数据无须更新' % self.stock_code)
 
 # def bao_history_k_data(self) -> pd.DataFrame:
 #     df = bao.query_history_k_data_plus(
