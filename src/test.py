@@ -7,6 +7,7 @@ import colorama
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.stocks.adj_factor import AdjFactor
+from sz.stock_data.stocks.money_flow import MoneyFlow
 from sz.stock_data.stocks.stock_5min import Stock5min
 from sz.stock_data.stocks.stock_daily import StockDaily
 from sz.stock_data.toolbox.data_provider import bao_login, bao_logout
@@ -26,6 +27,7 @@ def test():
     StockDaily(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     Stock5min(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     AdjFactor(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    MoneyFlow(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 

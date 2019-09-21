@@ -17,7 +17,7 @@ from sz.stock_data.toolbox.datetime import ts_date
 from sz.stock_data.toolbox.helper import mtime_of_file
 
 
-class AdjFactor(object):
+class MoneyFlow(object):
 
     def __init__(self, data_dir: str, stock_code: str):
         self.data_dir = data_dir
@@ -29,7 +29,7 @@ class AdjFactor(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'adj_factor.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'money_flow.csv')
 
     def _setup_dir_(self):
         """
@@ -65,7 +65,7 @@ class AdjFactor(object):
             self.dataframe.set_index(keys = 'trade_date', drop = False, inplace = True)
             self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地复权因子数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地个股资金流向数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -86,6 +86,19 @@ class AdjFactor(object):
         else:
             return self.dataframe[-1].loc['trade_date'].date() + timedelta(days = 1)
 
+    @RateLimiter(max_calls = 2, period = 1.5)
+    def ts_money_flow(self, start_date: date, end_date: date) -> pd.DataFrame:
+        df: pd.DataFrame = ts_pro_api().moneyflow(
+            ts_code = self.stock_code,
+            start_date = ts_date(start_date),
+            end_date = ts_date(end_date)
+        )
+        df['trade_date'] = pd.to_datetime(df['trade_date'], format = '%Y%m%d')
+        df.set_index(keys = 'trade_date', drop = False, inplace = True)
+        df.sort_index(inplace = True)
+        logging.info(colorama.Fore.YELLOW + '下载 %s 个股资金流向数据: %s -- %s' % (self.stock_code, start_date, end_date))
+        return df
+
     def update(self):
         self._setup_dir_()
         self.prepare()
@@ -100,7 +113,7 @@ class AdjFactor(object):
             while start_date <= last_trade_day:
                 end_date = start_date + step_days
                 end_date = min(end_date, last_trade_day)
-                df = self.ts_adj_factor(start_date = start_date, end_date = end_date)
+                df = self.ts_money_flow(start_date = start_date, end_date = end_date)
                 df_list.append(df)
                 start_date = end_date + timedelta(days = 1)
 
@@ -113,20 +126,7 @@ class AdjFactor(object):
             )
 
             logging.info(
-                colorama.Fore.YELLOW + '%s 复权因子数据更新到: %s path: %s' % (
+                colorama.Fore.YELLOW + '%s 个股资金流向数据更新到: %s path: %s' % (
                     self.stock_code, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '%s 复权因子数据无须更新' % self.stock_code)
-
-    @RateLimiter(max_calls = 2, period = 1.5)
-    def ts_adj_factor(self, start_date: date, end_date: date) -> pd.DataFrame:
-        df: pd.DataFrame = ts_pro_api().adj_factor(
-            ts_code = self.stock_code,
-            start_date = ts_date(start_date),
-            end_date = ts_date(end_date)
-        )
-        df['trade_date'] = pd.to_datetime(df['trade_date'], format = '%Y%m%d')
-        df.set_index(keys = 'trade_date', drop = False, inplace = True)
-        df.sort_index(inplace = True)
-        logging.info(colorama.Fore.YELLOW + '下载 %s 复权因子数据: %s -- %s' % (self.stock_code, start_date, end_date))
-        return df
+            logging.info(colorama.Fore.BLUE + '%s 个股资金流向数据无须更新' % self.stock_code)
