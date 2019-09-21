@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from typing import Union, List
 
 import colorama
-import numpy as np
 import pandas as pd
 
 from sz.stock_data.stock_data import StockData
@@ -14,7 +13,7 @@ from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
-class StkHolderNumber(object):
+class StkHolderTrade(object):
 
     def __init__(self, data_dir: str, stock_code: str):
         self.data_dir = data_dir
@@ -26,7 +25,7 @@ class StkHolderNumber(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'stk_holder_number.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'stk_holder_trade.csv')
 
     def _setup_dir_(self):
         """
@@ -54,10 +53,10 @@ class StkHolderNumber(object):
         if os.path.exists(self.file_path()):
             self.dataframe = pd.read_csv(
                 filepath_or_buffer = self.file_path(),
-                parse_dates = ['ann_date', 'end_date']
+                parse_dates = ['ann_date', 'begin_date', 'close_date']
             )
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地 [股东人数] 数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地 [股东增减持] 数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -80,18 +79,20 @@ class StkHolderNumber(object):
 
     @ts_rate_limiter
     def ts_top10_holders(self, start_date: date, end_date: date) -> pd.DataFrame:
-        df: pd.DataFrame = ts_pro_api().stk_holdernumber(
+        df: pd.DataFrame = ts_pro_api().stk_holdertrade(
             ts_code = self.stock_code,
             start_date = ts_date(start_date),
-            end_date = ts_date(end_date)
+            end_date = ts_date(end_date),
+            fields = 'ts_code,ann_date,holder_name,holder_type,in_de,change_vol,change_ratio,after_share,after_ratio,avg_price,total_share,begin_date,close_date'
         )
         if not df.empty:
             df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
-            df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
-            df.sort_values(by = 'end_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s [股东人数] 数据: %s -- %s' % (self.stock_code, start_date, end_date))
+            df['begin_date'] = pd.to_datetime(df['begin_date'], format = '%Y%m%d')
+            df['close_date'] = pd.to_datetime(df['close_date'], format = '%Y%m%d')
+            df.sort_values(by = 'ann_date', inplace = True)
+            logging.info(colorama.Fore.YELLOW + '下载 %s [股东增减持] 数据: %s -- %s' % (self.stock_code, start_date, end_date))
         else:
-            logging.info(colorama.Fore.YELLOW + '%s [股东人数] 数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
+            logging.info(colorama.Fore.YELLOW + '%s [股东增减持] 数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
         return df
 
     def update(self):
@@ -113,7 +114,7 @@ class StkHolderNumber(object):
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
-            self.dataframe.sort_values(by = 'end_date', inplace = True)
+            self.dataframe.sort_values(by = 'ann_date', inplace = True)
 
             self.dataframe.to_csv(
                 path_or_buf = self.file_path(),
@@ -121,7 +122,7 @@ class StkHolderNumber(object):
             )
 
             logging.info(
-                colorama.Fore.YELLOW + '%s [股东人数] 数据更新到: %s path: %s' % (
+                colorama.Fore.YELLOW + '%s [股东增减持] 数据更新到: %s path: %s' % (
                     self.stock_code, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '%s [股东人数] 数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '%s [股东增减持] 数据无须更新' % self.stock_code)
