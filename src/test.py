@@ -6,6 +6,7 @@ import logging
 import colorama
 
 from sz.stock_data.stock_data import StockData
+from sz.stock_data.stocks.stock_5min import Stock5min
 from sz.stock_data.stocks.stock_daily import StockDaily
 from sz.stock_data.toolbox.data_provider import bao_login, bao_logout
 
@@ -22,6 +23,7 @@ def test():
     # StockData().hs300.update()
 
     StockDaily(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    Stock5min(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 

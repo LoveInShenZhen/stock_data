@@ -5,6 +5,7 @@ from typing import Union, List
 import baostock as bao
 import colorama
 import pandas as pd
+import numpy as np
 
 from datetime import date, timedelta
 from sz.stock_data.stock_data import StockData
@@ -12,11 +13,8 @@ from sz.stock_data.toolbox.data_provider import ts_code
 from sz.stock_data.toolbox.helper import mtime_of_file
 
 
-class StockDaily(object):
-    """
-    baostock 能获取2006-01-01至当前时间的数据
-    """
-    base_date = date(year = 2006, month = 1, day = 1)
+class Stock5min(object):
+    base_date = date(year = 2011, month = 1, day = 1)
 
     def __init__(self, data_dir: str, stock_code: str):
         self.data_dir = data_dir
@@ -28,7 +26,7 @@ class StockDaily(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'day.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, '5min.csv')
 
     def _setup_dir_(self):
         """
@@ -56,12 +54,20 @@ class StockDaily(object):
         if os.path.exists(self.file_path()):
             self.dataframe = pd.read_csv(
                 filepath_or_buffer = self.file_path(),
-                parse_dates = ['date']
+                parse_dates = ['time', 'date'],
+                dtype = {
+                    'open': np.float64,
+                    'high': np.float64,
+                    'low': np.float64,
+                    'close': np.float64,
+                    'volume': np.float64,
+                    'amount': np.float64
+                }
             )
-            self.dataframe.set_index(keys = 'date', drop = False, inplace = True)
+            self.dataframe.set_index(keys = 'time', drop = False, inplace = True)
             self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地日线数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地 5min 线数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -93,7 +99,7 @@ class StockDaily(object):
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
-            step_days = timedelta(days = 1000)
+            step_days = timedelta(days = 50)
 
             while start_date <= last_trade_day:
                 end_date = start_date + step_days
@@ -102,20 +108,26 @@ class StockDaily(object):
                     code = self.stock_code,
                     start_date = str(start_date),
                     end_date = str(end_date),
-                    frequency = 'd',
-                    fields = 'date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,peTTM,psTTM,pcfNcfTTM,pbMRQ,isST',
+                    frequency = '5',
+                    fields = 'date,time,code,open,high,low,close,volume,amount,adjustflag',
                     adjustflag = '3'
                 )
-                df = rs.get_data()
-                # logging.debug(colorama.Fore.GREEN + '\n' + df.to_string())
-                df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
-                df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
-                df['code'] = df['code'].apply(lambda x: ts_code(x))
-                df.set_index(keys = 'date', drop = False, inplace = True)
+                df_5min = rs.get_data()
+                df_5min['date'] = pd.to_datetime(df_5min['date'], format = '%Y-%m-%d')
+                df_5min['time'] = df_5min['time'].apply(lambda x: pd.to_datetime(x[:-3], format = '%Y%m%d%H%M%S'))
+                df_5min['code'] = df_5min['code'].apply(lambda x: ts_code(x))
+                df_5min['open'] = df_5min['open'].astype(np.float64)
+                df_5min['high'] = df_5min['high'].astype(np.float64)
+                df_5min['low'] = df_5min['low'].astype(np.float64)
+                df_5min['close'] = df_5min['close'].astype(np.float64)
+                df_5min['volume'] = df_5min['volume'].astype(np.float64)
+                df_5min['amount'] = df_5min['amount'].astype(np.float64)
+                df_5min.set_index(keys = 'time', drop = False, inplace = True)
                 logging.debug(
-                    colorama.Fore.YELLOW + '下载 %s 日线数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
+                    colorama.Fore.YELLOW + '下载 %s 5min 线数据, 从 %s 到 %s' % (
+                        self.stock_code, str(start_date), str(end_date)))
 
-                df_list.append(df)
+                df_list.append(df_5min)
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
@@ -125,7 +137,9 @@ class StockDaily(object):
                 path_or_buf = self.file_path(),
                 index = False
             )
+
             logging.info(
-                colorama.Fore.YELLOW + '%s 日线数据更新到: %s path: %s' % (self.stock_code, str(end_date), self.file_path()))
+                colorama.Fore.YELLOW + '%s 5min 线数据更新到: %s path: %s' % (
+                    self.stock_code, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '%s 日线数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '%s 5min 线数据无须更新' % self.stock_code)
