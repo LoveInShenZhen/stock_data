@@ -8,7 +8,7 @@ import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
-from sz.stock_data.toolbox.datetime import ts_date
+from sz.stock_data.toolbox.datetime import ts_date, to_datetime64
 from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
@@ -86,9 +86,9 @@ class StkHolderTrade(object):
             fields = 'ts_code,ann_date,holder_name,holder_type,in_de,change_vol,change_ratio,after_share,after_ratio,avg_price,total_share,begin_date,close_date'
         )
         if not df.empty:
-            df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
-            df['begin_date'] = pd.to_datetime(df['begin_date'], format = '%Y%m%d')
-            df['close_date'] = pd.to_datetime(df['close_date'], format = '%Y%m%d')
+            df['ann_date'] = df['ann_date'].apply(lambda x: to_datetime64(x))
+            df['begin_date'] = df['begin_date'].apply(lambda x: to_datetime64(x))
+            df['close_date'] = df['close_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'ann_date', inplace = True)
             logging.info(colorama.Fore.YELLOW + '下载 %s [股东增减持] 数据: %s -- %s' % (self.stock_code, start_date, end_date))
         else:

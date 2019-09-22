@@ -9,7 +9,7 @@ import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
-from sz.stock_data.toolbox.datetime import ts_date
+from sz.stock_data.toolbox.datetime import ts_date, to_datetime64
 from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
@@ -86,8 +86,8 @@ class StkHolderNumber(object):
             end_date = ts_date(end_date)
         )
         if not df.empty:
-            df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
-            df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
+            df['ann_date'] = df['ann_date'].apply(lambda x: to_datetime64(x))
+            df['end_date'] = df['end_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'end_date', inplace = True)
             logging.info(colorama.Fore.YELLOW + '下载 %s [股东人数] 数据: %s -- %s' % (self.stock_code, start_date, end_date))
         else:
