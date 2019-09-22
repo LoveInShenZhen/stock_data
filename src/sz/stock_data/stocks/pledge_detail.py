@@ -9,6 +9,7 @@ import numpy as np
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
+from sz.stock_data.toolbox.datetime import to_datetime64
 from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
@@ -76,23 +77,16 @@ class PledgeDetail(object):
             fields = 'ts_code,ann_date,holder_name,pledge_amount,start_date,end_date,is_release,release_date,pledgor,holding_amount,pledged_amount,p_total_ratio,h_total_ratio,is_buyback'
         )
         if not df.empty:
-            df['ann_date'] = df['ann_date'].apply(lambda x: self.to_datetime64(x))
-            df['start_date'] = df['start_date'].apply(lambda x: self.to_datetime64(x))
-            df['end_date'] = df['end_date'].apply(lambda x: self.to_datetime64(x))
-            df['release_date'] = df['release_date'].apply(lambda x: self.to_datetime64(x))
+            df['ann_date'] = df['ann_date'].apply(lambda x: to_datetime64(x))
+            df['start_date'] = df['start_date'].apply(lambda x: to_datetime64(x))
+            df['end_date'] = df['end_date'].apply(lambda x: to_datetime64(x))
+            df['release_date'] = df['release_date'].apply(lambda x: to_datetime64(x))
 
             df.sort_values(by = 'end_date', inplace = True)
             logging.info(colorama.Fore.YELLOW + '下载 %s [股权质押明细] 数据' % self.stock_code)
         else:
             logging.info(colorama.Fore.YELLOW + '%s [股权质押明细] 无最新数据' % self.stock_code)
         return df
-
-    @staticmethod
-    def to_datetime64(x) -> Union[np.datetime64, None]:
-        if x is None:
-            return None
-        else:
-            return pd.to_datetime(x, format = '%Y%m%d')
 
     def update(self):
         self._setup_dir_()

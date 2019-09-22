@@ -1,3 +1,5 @@
+from typing import Union
+
 import pandas as pd
 import numpy as np
 from datetime import datetime, date
@@ -18,3 +20,10 @@ def yyyymmdd_date_parser(x):
 
 def ts_date(day: date) -> str:
     return day.strftime('%Y%m%d')
+
+
+def to_datetime64(x) -> Union[np.datetime64, None]:
+    if x is None:
+        return None
+    else:
+        return pd.to_datetime(x, format = '%Y%m%d')
