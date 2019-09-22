@@ -22,8 +22,14 @@ def ts_date(day: date) -> str:
     return day.strftime('%Y%m%d')
 
 
-def to_datetime64(x) -> Union[np.datetime64, None]:
+def to_datetime64(x: str) -> Union[np.datetime64, None]:
     if x is None:
         return None
-    else:
+    elif len(x) == 8:
         return pd.to_datetime(x, format = '%Y%m%d')
+    elif len(x) == 10:
+        return pd.to_datetime(x, format = '%Y-%m-%d')
+    elif len(x) == 10:
+        return pd.to_datetime(x, format = '%Y-%m-%d %H:%M:%S')
+    else:
+        raise Exception('无法识别的日期时间字符串: %s' % x)

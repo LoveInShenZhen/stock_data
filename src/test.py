@@ -14,6 +14,7 @@ from sz.stock_data.stocks.stk_holder_number import StkHolderNumber
 from sz.stock_data.stocks.stk_holder_trade import StkHolderTrade
 from sz.stock_data.stocks.stock_5min import Stock5min
 from sz.stock_data.stocks.stock_daily import StockDaily
+from sz.stock_data.stocks.suspend import Suspend
 from sz.stock_data.stocks.top10_floatholders import Top10FloatHolders
 from sz.stock_data.stocks.top10_holders import Top10Holders
 from sz.stock_data.toolbox.data_provider import bao_login, bao_logout
@@ -22,7 +23,8 @@ colorama.init(autoreset = True)
 
 logging.basicConfig(
     level = logging.DEBUG,
-    format = "[%(asctime)-15s] [%(filename)s:%(lineno)d] [%(threadName)s] [%(levelname)s] %(message)s"
+    # format = "[%(asctime)-15s] [%(filename)s:%(lineno)d] [%(threadName)s] [%(levelname)s] %(message)s"
+    format = "[%(asctime)-15s] [%(threadName)s] [%(levelname)s] %(message)s"
 )
 
 
@@ -40,6 +42,7 @@ def test():
     StkHolderTrade(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     PledgeStat(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     PledgeDetail(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    Suspend(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 
