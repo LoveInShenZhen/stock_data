@@ -8,6 +8,7 @@ import colorama
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.stocks.adj_factor import AdjFactor
 from sz.stock_data.stocks.money_flow import MoneyFlow
+from sz.stock_data.stocks.pledge_detail import PledgeDetail
 from sz.stock_data.stocks.pledge_stat import PledgeStat
 from sz.stock_data.stocks.stk_holder_number import StkHolderNumber
 from sz.stock_data.stocks.stk_holder_trade import StkHolderTrade
@@ -38,6 +39,7 @@ def test():
     StkHolderNumber(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     StkHolderTrade(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
     PledgeStat(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
+    PledgeDetail(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 

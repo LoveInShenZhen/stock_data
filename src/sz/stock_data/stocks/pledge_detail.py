@@ -5,6 +5,7 @@ from typing import Union
 
 import colorama
 import pandas as pd
+import numpy as np
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
@@ -12,10 +13,10 @@ from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
-class PledgeStat(object):
+class PledgeDetail(object):
     """
-    股权质押统计数据
-    https://tushare.pro/document/2?doc_id=110
+    股权质押明细
+    https://tushare.pro/document/2?doc_id=111
     """
 
     def __init__(self, data_dir: str, stock_code: str):
@@ -28,7 +29,7 @@ class PledgeStat(object):
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'pledge_stat.csv')
+        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'pledge_detail.csv')
 
     def _setup_dir_(self):
         """
@@ -59,7 +60,7 @@ class PledgeStat(object):
                 parse_dates = ['end_date']
             )
         else:
-            logging.warning(colorama.Fore.RED + '%s 本地 [股权质押统计] 数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '%s 本地 [股权质押明细] 数据文件不存在,请及时下载更新' % self.stock_code)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -69,18 +70,29 @@ class PledgeStat(object):
             self.load()
 
     @ts_rate_limiter
-    def ts_pledge_stat(self) -> pd.DataFrame:
-        df: pd.DataFrame = ts_pro_api().pledge_stat(
+    def ts_pledge_detail(self) -> pd.DataFrame:
+        df: pd.DataFrame = ts_pro_api().pledge_detail(
             ts_code = self.stock_code,
-            fields = 'ts_code,end_date,pledge_count,unrest_pledge,rest_pledge,total_share,pledge_ratio'
+            fields = 'ts_code,ann_date,holder_name,pledge_amount,start_date,end_date,is_release,release_date,pledgor,holding_amount,pledged_amount,p_total_ratio,h_total_ratio,is_buyback'
         )
         if not df.empty:
-            df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
+            df['ann_date'] = df['ann_date'].apply(lambda x: self.to_datetime64(x))
+            df['start_date'] = df['start_date'].apply(lambda x: self.to_datetime64(x))
+            df['end_date'] = df['end_date'].apply(lambda x: self.to_datetime64(x))
+            df['release_date'] = df['release_date'].apply(lambda x: self.to_datetime64(x))
+
             df.sort_values(by = 'end_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s [股权质押统计] 数据' % self.stock_code)
+            logging.info(colorama.Fore.YELLOW + '下载 %s [股权质押明细] 数据' % self.stock_code)
         else:
-            logging.info(colorama.Fore.YELLOW + '%s [股权质押统计] 无最新数据' % self.stock_code)
+            logging.info(colorama.Fore.YELLOW + '%s [股权质押明细] 无最新数据' % self.stock_code)
         return df
+
+    @staticmethod
+    def to_datetime64(x) -> Union[np.datetime64, None]:
+        if x is None:
+            return None
+        else:
+            return pd.to_datetime(x, format = '%Y%m%d')
 
     def update(self):
         self._setup_dir_()
@@ -88,7 +100,7 @@ class PledgeStat(object):
 
         if self.should_update():
             # 获取最新
-            latest_df = self.ts_pledge_stat()
+            latest_df = self.ts_pledge_detail()
             # 合并最新, 并且去掉重复记录
             self.dataframe = pd.concat([self.dataframe, latest_df]).drop_duplicates()
             self.dataframe.to_csv(
@@ -97,7 +109,7 @@ class PledgeStat(object):
             )
 
             logging.info(
-                colorama.Fore.YELLOW + '%s [股权质押统计] 数据更新到: %s' % (
+                colorama.Fore.YELLOW + '%s [股权质押明细] 数据更新到: %s' % (
                     self.stock_code, str(date.today())))
         else:
-            logging.info(colorama.Fore.BLUE + '%s [股权质押统计] 数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '%s [股权质押明细] 数据无须更新' % self.stock_code)
