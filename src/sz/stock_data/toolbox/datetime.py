@@ -22,10 +22,15 @@ def ts_date(day: date) -> str:
     return day.strftime('%Y%m%d')
 
 
-def to_datetime64(x: str) -> Union[np.datetime64, None]:
+def to_datetime64(x: Union[str, pd.Timestamp, date]) -> Union[np.datetime64, None]:
     if x is None:
         return None
-    elif len(x) == 8:
+    if x is date:
+        return x
+    if x is pd.Timestamp:
+        return pd.to_datetime(datetime(x.year, x.month, x.day))
+
+    if len(x) == 8:
         return pd.to_datetime(x, format = '%Y%m%d')
     elif len(x) == 10:
         return pd.to_datetime(x, format = '%Y-%m-%d')

@@ -81,7 +81,7 @@ class AdjFactor(object):
         if self.dataframe.empty:
             return StockData().stock_basic.list_date_of(self.stock_code)
         else:
-            return self.dataframe[-1].loc['trade_date'].date() + timedelta(days = 1)
+            return self.dataframe.iloc[-1].loc['trade_date'].date() + timedelta(days = 1)
 
     def update(self):
         self._setup_dir_()

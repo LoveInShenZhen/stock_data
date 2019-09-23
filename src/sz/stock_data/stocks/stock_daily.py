@@ -81,7 +81,7 @@ class StockDaily(object):
         if self.dataframe.empty:
             return self.base_date
         else:
-            return self.dataframe[-1].loc['date'].date() + timedelta(days = 1)
+            return self.dataframe.iloc[-1].loc['date'].date() + timedelta(days = 1)
 
     def update(self):
         self._setup_dir_()

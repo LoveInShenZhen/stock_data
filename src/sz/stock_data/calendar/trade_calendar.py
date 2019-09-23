@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import date
-from typing import List, Union
+from typing import List, Union, Iterable
 
 import colorama
 import numpy as np
@@ -9,6 +9,7 @@ import pandas as pd
 from pandas import Timestamp
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
+from sz.stock_data.toolbox.datetime import to_datetime64
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
@@ -115,6 +116,19 @@ class TradeCalendar(object):
                 return day
             else:
                 return latest_day
+
+    def trade_day_between(self, from_date: date, to_date: date) -> Iterable[date]:
+        """
+        返回指定起始日期之间(包含起始日期)所有交易日的日期
+        :param from_date:
+        :param to_date:
+        :return:
+        """
+        self.prepare()
+        df: pd.DataFrame = self.dataframe
+        df = df[(df['cal_date'] >= str(from_date)) & (df['cal_date'] <= str(to_date)) & (df['is_open'] == True)]
+        for index, value in df['cal_date'].iteritems():
+            yield value.date()
 
     @staticmethod
     def end_date() -> str:

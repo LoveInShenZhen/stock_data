@@ -35,6 +35,7 @@ class StockBasic(object):
 
     def update(self):
         self._setup_dir_()
+        self.prepare()
         if self.should_update():
             df = self.ts_stock_basic()
             df.to_csv(

@@ -5,7 +5,6 @@ from typing import Union
 
 import colorama
 import pandas as pd
-import numpy as np
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
