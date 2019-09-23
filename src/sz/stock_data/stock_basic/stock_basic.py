@@ -1,16 +1,13 @@
 import logging
 import os
 from datetime import date
-from typing import List, Union
+from typing import Union
 
 import colorama
-import numpy as np
 import pandas as pd
-from pandas import Timestamp
-from ratelimiter import RateLimiter
-from sz.stock_data.toolbox.helper import need_update
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
+from sz.stock_data.toolbox.helper import need_update
 
 
 class StockBasic(object):
