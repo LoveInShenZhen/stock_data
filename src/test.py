@@ -6,6 +6,7 @@ from datetime import date
 
 import colorama
 
+from sz.stock_data.market.block_trade import BlockTrade
 from sz.stock_data.market.top_inst import StockTopInst
 from sz.stock_data.market.top_list import StockTopList
 from sz.stock_data.stock_data import StockData
@@ -48,8 +49,8 @@ def test():
     # Suspend(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
 
     StockTopList(data_dir = StockData().data_dir).update()
-    # StockTopList(data_dir = StockData().data_dir).update_for([date(2008, 1, 2), date(2008, 1, 3)])
     StockTopInst(data_dir = StockData().data_dir).update()
+    BlockTrade(data_dir = StockData().data_dir).update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 
