@@ -66,6 +66,7 @@ class StockBasic(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     def list_date_of(self, ts_code: str) -> date:
         """

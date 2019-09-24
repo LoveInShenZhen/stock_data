@@ -22,7 +22,7 @@ class IndexDaily(object):
         self.data_dir = data_dir
         self.index_code = ts_code(index_code)
         self.dataframe: Union[pd.DataFrame, None] = None
-        self.index_name = StockData().index_basic().name_of_index(self.index_code)
+        self.index_name = StockData().index_basic.name_of_index(self.index_code)
 
     def file_path(self) -> str:
         """
@@ -70,6 +70,7 @@ class IndexDaily(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     def start_date(self) -> date:
         """

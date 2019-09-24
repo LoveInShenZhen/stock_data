@@ -69,6 +69,7 @@ class Top10Holders(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     def start_date(self) -> date:
         """

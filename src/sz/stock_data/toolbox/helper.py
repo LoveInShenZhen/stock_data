@@ -1,5 +1,6 @@
 import os
 from datetime import date
+import pandas as pd
 
 
 def need_update(fpath: str, outdate_days: int) -> bool:
@@ -20,6 +21,21 @@ def need_update(fpath: str, outdate_days: int) -> bool:
             return True
         else:
             return False
+
+
+def need_update_by_trade_date(df: pd.DataFrame, column_name: str) -> bool:
+    """
+    根据DataFrame中指定的交易日期的最后记录的值, 如果在最近的交易日之前, 则说明需要更新
+     :param df:
+    :param column_name: 交易日期对应的字段名称
+    :return:
+    """
+    if df.empty:
+        # 如果DataFrame为空, 说明没有数据在本地, 需要更新
+        return True
+    else:
+        today = date.today()
+        return df.iloc[-1].loc[column_name].date() < today
 
 
 def mtime_of_file(fpath: str) -> date:

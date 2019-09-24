@@ -47,6 +47,7 @@ class HS300(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     def should_update(self) -> bool:
         """

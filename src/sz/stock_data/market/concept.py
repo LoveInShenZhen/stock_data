@@ -54,6 +54,7 @@ class StockConcept(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     @ts_rate_limiter
     def ts_concept(self) -> pd.DataFrame:

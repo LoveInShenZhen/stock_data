@@ -80,6 +80,7 @@ class TradeCalendar(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     def latest_trade_day(self) -> date:
         """

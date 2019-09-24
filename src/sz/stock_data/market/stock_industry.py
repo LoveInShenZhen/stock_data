@@ -57,6 +57,7 @@ class StockIndustry(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     @staticmethod
     def bao_query_stock_industry() -> pd.DataFrame:

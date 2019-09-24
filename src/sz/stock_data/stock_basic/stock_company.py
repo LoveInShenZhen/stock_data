@@ -60,6 +60,11 @@ class StockCompany(object):
 
         return self.dataframe
 
+    def prepare(self):
+        if self.dataframe is None:
+            self.load()
+        return self
+
     @staticmethod
     @ts_rate_limiter
     def ts_stock_basic() -> pd.DataFrame:

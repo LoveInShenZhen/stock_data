@@ -95,6 +95,7 @@ class StockData(object, metaclass = SingletonMeta):
 
         return self._zz500
 
+    @property
     def index_basic(self) -> IndexBasic:
         """
         指数基础信息

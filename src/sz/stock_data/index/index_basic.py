@@ -64,6 +64,7 @@ class IndexBasic(object):
     def prepare(self):
         if self.dataframe is None:
             self.load()
+        return self
 
     @ts_rate_limiter
     def ts_index_basic(self, market_code: str) -> pd.DataFrame:
