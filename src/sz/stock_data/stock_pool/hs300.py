@@ -30,22 +30,6 @@ class HS300(object):
         """
         os.makedirs(os.path.dirname(self.file_path()), exist_ok = True)
 
-    def update(self):
-        self._setup_dir_()
-        if self.should_update():
-            df = self.bao_hs300_stocks()
-            df.to_csv(
-                path_or_buf = self.file_path(),
-                index = False
-            )
-
-    def should_update(self) -> bool:
-        """
-        判断数据是否需要更新.(更新频率: 每周更新)
-        :return:
-        """
-        return need_update(self.file_path(), 7)
-
     def load(self) -> pd.DataFrame:
         if os.path.exists(self.file_path()):
             self.dataframe = pd.read_csv(
@@ -60,6 +44,17 @@ class HS300(object):
 
         return self.dataframe
 
+    def prepare(self):
+        if self.dataframe is None:
+            self.load()
+
+    def should_update(self) -> bool:
+        """
+        判断数据是否需要更新.(更新频率: 每周更新)
+        :return:
+        """
+        return need_update(self.file_path(), 7)
+
     @staticmethod
     def bao_hs300_stocks() -> pd.DataFrame:
         """
@@ -71,3 +66,14 @@ class HS300(object):
         df.set_index(keys = 'code', drop = False, inplace = True)
         logging.info(colorama.Fore.YELLOW + '获取沪深300成分股信息')
         return df
+
+    def update(self):
+        self._setup_dir_()
+
+        if self.should_update():
+            df = self.bao_hs300_stocks()
+            df.to_csv(
+                path_or_buf = self.file_path(),
+                index = False
+            )
+            self.prepare()
