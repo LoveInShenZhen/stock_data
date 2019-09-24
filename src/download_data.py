@@ -6,6 +6,8 @@ from datetime import date
 
 import colorama
 
+from sz.stock_data.index.index_basic import IndexBasic
+from sz.stock_data.index.index_daily import IndexDaily
 from sz.stock_data.market.block_trade import BlockTrade
 from sz.stock_data.market.concept import StockConcept
 from sz.stock_data.market.margin import StockMargin
@@ -58,7 +60,11 @@ def test():
     # StockConcept(data_dir = StockData().data_dir).update()
     # StockMargin(data_dir = StockData().data_dir).update()
     # StockMarginDetail(data_dir = StockData().data_dir).update()
-    StockIndustry(data_dir = StockData().data_dir).update()
+    # StockIndustry(data_dir = StockData().data_dir).update()
+    # IndexBasic(data_dir = StockData().data_dir).update()
+
+    for index_code in StockData().index_basic().default_index_pool():
+        IndexDaily(data_dir = StockData().data_dir, index_code = index_code).update()
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 

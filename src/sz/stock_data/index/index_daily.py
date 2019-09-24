@@ -12,23 +12,24 @@ from sz.stock_data.toolbox.data_provider import ts_code
 from sz.stock_data.toolbox.helper import mtime_of_file
 
 
-class StockDaily(object):
+class IndexDaily(object):
     """
     baostock 能获取2006-01-01至当前时间的数据
     """
     base_date = date(year = 2006, month = 1, day = 1)
 
-    def __init__(self, data_dir: str, stock_code: str):
+    def __init__(self, data_dir: str, index_code: str):
         self.data_dir = data_dir
-        self.stock_code = ts_code(stock_code)
+        self.index_code = ts_code(index_code)
         self.dataframe: Union[pd.DataFrame, None] = None
+        self.index_name = StockData().index_basic().name_of_index(self.index_code)
 
     def file_path(self) -> str:
         """
         返回保存数据的csv文件路径
         :return:
         """
-        return os.path.join(self.data_dir, 'stocks', self.stock_code, 'day.csv')
+        return os.path.join(self.data_dir, 'index', 'index_daily', '%s.csv' % self.index_code)
 
     def _setup_dir_(self):
         """
@@ -61,7 +62,7 @@ class StockDaily(object):
             self.dataframe.set_index(keys = 'date', drop = False, inplace = True)
             self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + '本地 [%s 日线] 数据文件不存在,请及时下载更新' % self.stock_code)
+            logging.warning(colorama.Fore.RED + '本地 [%s 日线] 数据文件不存在,请及时下载更新' % self.index_name)
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -85,11 +86,10 @@ class StockDaily(object):
 
     def update(self):
         self._setup_dir_()
-        if self.dataframe is None:
-            self.load()
+        self.prepare()
 
         if self.should_update():
-            start_date: date = max(self.start_date(), StockData().stock_basic.list_date_of(self.stock_code))
+            start_date: date = self.start_date()
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
@@ -99,7 +99,7 @@ class StockDaily(object):
                 end_date = start_date + step_days
                 end_date = min(end_date, last_trade_day)
                 rs = bao.query_history_k_data_plus(
-                    code = self.stock_code,
+                    code = self.index_code,
                     start_date = str(start_date),
                     end_date = str(end_date),
                     frequency = 'd',
@@ -107,15 +107,16 @@ class StockDaily(object):
                     adjustflag = '3'
                 )
                 df = rs.get_data()
-                # logging.debug(colorama.Fore.GREEN + '\n' + df.to_string())
-                df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
-                df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
-                df['code'] = df['code'].apply(lambda x: ts_code(x))
-                df.set_index(keys = 'date', drop = False, inplace = True)
-                logging.debug(
-                    colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
+                if not df.empty:
+                    df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
+                    df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
+                    df['code'] = df['code'].apply(lambda x: ts_code(x))
+                    df.set_index(keys = 'date', drop = False, inplace = True)
+                    logging.debug(
+                        colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s' % (
+                            self.index_name, str(start_date), str(end_date)))
 
-                df_list.append(df)
+                    df_list.append(df)
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
@@ -126,6 +127,7 @@ class StockDaily(object):
                 index = False
             )
             logging.info(
-                colorama.Fore.YELLOW + '[%s 日线] 数据更新到: %s path: %s' % (self.stock_code, str(end_date), self.file_path()))
+                colorama.Fore.YELLOW + '[%s 日线] 数据更新到: %s path: %s' % (
+                    self.index_name, str(end_date), self.file_path()))
         else:
-            logging.info(colorama.Fore.BLUE + '[%s 日线] 数据无须更新' % self.stock_code)
+            logging.info(colorama.Fore.BLUE + '[%s 日线] 数据无须更新' % self.index_name)

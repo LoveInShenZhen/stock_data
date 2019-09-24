@@ -7,6 +7,7 @@ import pandas as pd
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
 from sz.stock_data.toolbox.helper import need_update
+from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
 class StockCompany(object):
@@ -60,6 +61,7 @@ class StockCompany(object):
         return self.dataframe
 
     @staticmethod
+    @ts_rate_limiter
     def ts_stock_basic() -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().stock_company(
             exchange = '',

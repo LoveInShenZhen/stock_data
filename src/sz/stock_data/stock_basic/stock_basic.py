@@ -8,6 +8,7 @@ import pandas as pd
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
 from sz.stock_data.toolbox.helper import need_update
+from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
 class StockBasic(object):
@@ -42,7 +43,7 @@ class StockBasic(object):
 
     def should_update(self) -> bool:
         """
-        判断 stock_basic 数据是否需要更新.(更新频率: 每周更新)
+        判断数据是否需要更新.(更新频率: 每周更新)
         :return:
         """
         return need_update(self.file_path(), 7)
@@ -57,7 +58,7 @@ class StockBasic(object):
             self.dataframe.set_index(keys = 'ts_code', drop = False, inplace = True)
             self.dataframe.sort_index(inplace = True)
         else:
-            logging.warning(colorama.Fore.RED + 'StockBasic 本地数据文件不存在,请及时下载更新')
+            logging.warning(colorama.Fore.RED + '[股票列表基础信息] 本地数据文件不存在,请及时下载更新')
             self.dataframe = pd.DataFrame()
 
         return self.dataframe
@@ -76,6 +77,7 @@ class StockBasic(object):
         return self.dataframe.loc[ts_code].loc['list_date'].date()
 
     @staticmethod
+    @ts_rate_limiter
     def ts_stock_basic() -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().stock_basic(
             exchange = '',
@@ -84,5 +86,5 @@ class StockBasic(object):
         )
         df['list_date'] = pd.to_datetime(df['list_date'], format = '%Y%m%d')
         df['delist_date'] = pd.to_datetime(df['delist_date'], format = '%Y%m%d')
-        logging.info(colorama.Fore.YELLOW + '下载股票列表基础信息数据')
+        logging.info(colorama.Fore.YELLOW + '下载 [股票列表基础信息] 数据')
         return df

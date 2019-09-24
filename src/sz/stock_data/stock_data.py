@@ -1,6 +1,7 @@
 from typing import Union
 
 from sz.stock_data.calendar.trade_calendar import TradeCalendar
+from sz.stock_data.index.index_basic import IndexBasic
 from sz.stock_data.stock_basic.stock_basic import StockBasic
 from sz.stock_data.stock_basic.stock_company import StockCompany
 from sz.stock_data.stock_pool.hs300 import HS300
@@ -17,6 +18,7 @@ class StockData(object, metaclass = SingletonMeta):
         self._stock_company: Union[None, StockCompany] = None
         self._hs300: Union[None, HS300] = None
         self._zz500: Union[None, ZZ500] = None
+        self._index_basic: Union[None, IndexBasic] = None
 
     def setup(self, data_dir: str):
         self._data_dir = data_dir
@@ -92,3 +94,14 @@ class StockData(object, metaclass = SingletonMeta):
             self._zz500.load()
 
         return self._zz500
+
+    def index_basic(self) -> IndexBasic:
+        """
+        指数基础信息
+        :return:
+        """
+        if self._index_basic is None:
+            self._index_basic = IndexBasic(self.data_dir)
+            self._index_basic.load()
+
+        return self._index_basic
