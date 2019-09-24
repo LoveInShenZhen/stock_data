@@ -26,7 +26,7 @@ def need_update(fpath: str, outdate_days: int) -> bool:
 def need_update_by_trade_date(df: pd.DataFrame, column_name: str) -> bool:
     """
     根据DataFrame中指定的交易日期的最后记录的值, 如果在最近的交易日之前, 则说明需要更新
-     :param df:
+    :param df:
     :param column_name: 交易日期对应的字段名称
     :return:
     """
@@ -34,8 +34,8 @@ def need_update_by_trade_date(df: pd.DataFrame, column_name: str) -> bool:
         # 如果DataFrame为空, 说明没有数据在本地, 需要更新
         return True
     else:
-        today = date.today()
-        return df.iloc[-1].loc[column_name].date() < today
+        from sz.stock_data.stock_data import StockData
+        return df.iloc[-1].loc[column_name].date() < StockData().trade_calendar.latest_trade_day()
 
 
 def mtime_of_file(fpath: str) -> date:

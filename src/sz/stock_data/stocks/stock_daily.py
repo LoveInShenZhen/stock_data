@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import date, timedelta
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code
-from sz.stock_data.toolbox.helper import mtime_of_file
+from sz.stock_data.toolbox.helper import mtime_of_file, need_update_by_trade_date
 
 
 class StockDaily(object):
@@ -46,11 +46,9 @@ class StockDaily(object):
         if not os.path.exists(self.file_path()):
             return True
 
-        mtime = mtime_of_file(self.file_path())
-        if mtime < StockData().trade_calendar.latest_trade_day():
-            return True
-        else:
-            return False
+        self.prepare()
+
+        return need_update_by_trade_date(self.dataframe, 'date')
 
     def load(self) -> pd.DataFrame:
         if os.path.exists(self.file_path()):

@@ -9,7 +9,6 @@ import pandas as pd
 from pandas import Timestamp
 
 from sz.stock_data.toolbox.data_provider import ts_pro_api
-from sz.stock_data.toolbox.datetime import to_datetime64
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 

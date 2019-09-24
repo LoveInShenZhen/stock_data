@@ -1,20 +1,16 @@
 import logging
 import os
+from datetime import date, timedelta
 from typing import Union, List
 
-import baostock as bao
 import colorama
-import pandas as pd
 import numpy as np
-
-from datetime import date, timedelta
-
-from ratelimiter import RateLimiter
+import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
 from sz.stock_data.toolbox.datetime import ts_date
-from sz.stock_data.toolbox.helper import mtime_of_file
+from sz.stock_data.toolbox.helper import need_update_by_trade_date
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
@@ -48,11 +44,9 @@ class MoneyFlow(object):
         if not os.path.exists(self.file_path()):
             return True
 
-        mtime = mtime_of_file(self.file_path())
-        if mtime < StockData().trade_calendar.latest_trade_day():
-            return True
-        else:
-            return False
+        self.prepare()
+
+        return need_update_by_trade_date(self.dataframe, 'trade_date')
 
     def load(self) -> pd.DataFrame:
         if os.path.exists(self.file_path()):

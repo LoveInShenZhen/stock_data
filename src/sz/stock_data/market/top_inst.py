@@ -9,7 +9,7 @@ import pandas as pd
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_pro_api
 from sz.stock_data.toolbox.datetime import to_datetime64, ts_date
-from sz.stock_data.toolbox.helper import mtime_of_file
+from sz.stock_data.toolbox.helper import need_update_by_trade_date
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
 
@@ -36,18 +36,15 @@ class StockTopInst(object):
 
     def should_update(self) -> bool:
         """
-        如果数据文件的最后修改日期, 早于最近的一个交易日, 则需要更新数据
         如果文件不存在, 直接返回 True
         :return:
         """
         if not os.path.exists(self.file_path()):
             return True
 
-        mtime = mtime_of_file(self.file_path())
-        if mtime < StockData().trade_calendar.latest_trade_day():
-            return True
-        else:
-            return False
+        self.prepare()
+
+        return need_update_by_trade_date(self.dataframe, 'trade_date')
 
     def load(self) -> pd.DataFrame:
         """
