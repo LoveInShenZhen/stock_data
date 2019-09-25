@@ -111,7 +111,6 @@ class StockTopList(object):
                     latest_trade_day = trade_date
                 else:
                     logging.warning(colorama.Fore.RED + '没有 %s 的 [龙虎榜每日明细] 数据' % trade_date)
-                    logging.warning(colorama.Fore.RED + '\n' + df.to_string())
         except Exception as ex:
             logging.warning('更新 [龙虎榜每日明细] 发送异常中断: %s' % ex)
             raise ex

@@ -106,15 +106,16 @@ class StockDaily(object):
                     adjustflag = '3'
                 )
                 df = rs.get_data()
-                # logging.debug(colorama.Fore.GREEN + '\n' + df.to_string())
-                df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
-                df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
-                df['code'] = df['code'].apply(lambda x: ts_code(x))
-                df.set_index(keys = 'date', drop = False, inplace = True)
-                logging.debug(
-                    colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
+                if not df.empty:
+                    df['date'] = pd.to_datetime(df['date'], format = '%Y-%m-%d')
+                    df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
+                    df['code'] = df['code'].apply(lambda x: ts_code(x))
+                    df.set_index(keys = 'date', drop = False, inplace = True)
+                    logging.debug(
+                        colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
 
-                df_list.append(df)
+                    df_list.append(df)
+
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()

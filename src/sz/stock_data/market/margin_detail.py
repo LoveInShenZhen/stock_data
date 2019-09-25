@@ -114,7 +114,8 @@ class StockMarginDetail(object):
             try:
                 for trade_date in trad_date_list:
                     df = self.ts_margin_detail(trade_date)
-                    df_list.append(df)
+                    if not df.shape:
+                        df_list.append(df)
 
             except Exception as ex:
                 logging.warning('更新 [融资融券交易明细] 发生异常中断: %s' % ex)

@@ -110,21 +110,23 @@ class Stock5min(object):
                     adjustflag = '3'
                 )
                 df_5min = rs.get_data()
-                df_5min['date'] = pd.to_datetime(df_5min['date'], format = '%Y-%m-%d')
-                df_5min['time'] = df_5min['time'].apply(lambda x: pd.to_datetime(x[:-3], format = '%Y%m%d%H%M%S'))
-                df_5min['code'] = df_5min['code'].apply(lambda x: ts_code(x))
-                df_5min['open'] = df_5min['open'].astype(np.float64)
-                df_5min['high'] = df_5min['high'].astype(np.float64)
-                df_5min['low'] = df_5min['low'].astype(np.float64)
-                df_5min['close'] = df_5min['close'].astype(np.float64)
-                df_5min['volume'] = df_5min['volume'].astype(np.float64)
-                df_5min['amount'] = df_5min['amount'].astype(np.float64)
-                df_5min.set_index(keys = 'time', drop = False, inplace = True)
-                logging.debug(
-                    colorama.Fore.YELLOW + '下载 %s 5min 线数据, 从 %s 到 %s' % (
-                        self.stock_code, str(start_date), str(end_date)))
+                if not df_5min.empty:
+                    df_5min['date'] = pd.to_datetime(df_5min['date'], format = '%Y-%m-%d')
+                    df_5min['time'] = df_5min['time'].apply(lambda x: pd.to_datetime(x[:-3], format = '%Y%m%d%H%M%S'))
+                    df_5min['code'] = df_5min['code'].apply(lambda x: ts_code(x))
+                    df_5min['open'] = df_5min['open'].astype(np.float64)
+                    df_5min['high'] = df_5min['high'].astype(np.float64)
+                    df_5min['low'] = df_5min['low'].astype(np.float64)
+                    df_5min['close'] = df_5min['close'].astype(np.float64)
+                    df_5min['volume'] = df_5min['volume'].astype(np.float64)
+                    df_5min['amount'] = df_5min['amount'].astype(np.float64)
+                    df_5min.set_index(keys = 'time', drop = False, inplace = True)
+                    logging.debug(
+                        colorama.Fore.YELLOW + '下载 %s 5min 线数据, 从 %s 到 %s' % (
+                            self.stock_code, str(start_date), str(end_date)))
 
-                df_list.append(df_5min)
+                    df_list.append(df_5min)
+
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()

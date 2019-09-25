@@ -66,7 +66,8 @@ class StockConcept(object):
     @ts_rate_limiter
     def ts_concept_detail(self, concept_id: str, concept_name: str) -> pd.DataFrame:
         df: pd.DataFrame = ts_pro_api().concept_detail(
-            id = concept_id
+            id = concept_id,
+            fields = 'id,concept_name,ts_code,name,in_date,out_date'
         )
         logging.info(colorama.Fore.YELLOW + '下载 [概念股列表] - %s 共 %s 条' % (concept_name, df.shape[0]))
         return df

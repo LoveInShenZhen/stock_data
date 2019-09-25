@@ -113,7 +113,9 @@ class StockMargin(object):
                     end_date = start_date + step_days
                     end_date = min(end_date, last_trade_day)
                     df = self.ts_margin(start_date, end_date)
-                    df_list.append(df)
+                    if not df.empty:
+                        df_list.append(df)
+
                     start_date = end_date + timedelta(days = 1)
 
             except Exception as ex:

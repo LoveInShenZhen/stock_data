@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Union
+from typing import Union, Iterable
 
 import baostock as bao
 import colorama
@@ -78,3 +78,8 @@ class ZZ500(object):
                 index = False
             )
             self.prepare()
+
+    def stock_codes(self) -> Iterable[str]:
+        self.prepare()
+        for index, value in self.dataframe['code'].items():
+            yield value

@@ -91,7 +91,7 @@ class StkHolderTrade(object):
             df['begin_date'] = df['begin_date'].apply(lambda x: to_datetime64(x))
             df['close_date'] = df['close_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'ann_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s [股东增减持] 数据: %s -- %s' % (self.stock_code, start_date, end_date))
+            logging.info(colorama.Fore.YELLOW + '下载 %s [股东增减持] 数据: %s -- %s, 共 %s 条' % (self.stock_code, start_date, end_date, df.shape[0]))
         else:
             logging.info(colorama.Fore.YELLOW + '%s [股东增减持] 数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
         return df
@@ -105,7 +105,7 @@ class StkHolderTrade(object):
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
-            step_days = timedelta(days = 365)
+            step_days = timedelta(days = 3650)
 
             while start_date <= last_trade_day:
                 end_date = start_date + step_days

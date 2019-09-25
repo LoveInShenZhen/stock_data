@@ -9,7 +9,7 @@ import pandas as pd
 
 from sz.stock_data.stock_data import StockData
 from sz.stock_data.toolbox.data_provider import ts_code, ts_pro_api
-from sz.stock_data.toolbox.datetime import ts_date
+from sz.stock_data.toolbox.datetime import ts_date, to_datetime64
 from sz.stock_data.toolbox.helper import mtime_of_file
 from sz.stock_data.toolbox.limiter import ts_rate_limiter
 
@@ -91,10 +91,10 @@ class Top10Holders(object):
             end_date = ts_date(end_date)
         )
         if not df.empty:
-            df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
-            df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
+            df['ann_date'] = df['ann_date'].apply(lambda x: to_datetime64(x))
+            df['end_date'] = df['end_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'end_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s 前十大股东数据: %s -- %s' % (self.stock_code, start_date, end_date))
+            logging.info(colorama.Fore.YELLOW + '下载 %s 前十大股东数据: %s -- %s, 共 %s 条' % (self.stock_code, start_date, end_date, df.shape[0]))
         else:
             logging.info(colorama.Fore.YELLOW + '%s 前十大股东数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
         return df
@@ -108,7 +108,7 @@ class Top10Holders(object):
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
-            step_days = timedelta(days = 365)
+            step_days = timedelta(days = 3650)
 
             while start_date <= last_trade_day:
                 end_date = start_date + step_days

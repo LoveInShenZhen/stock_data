@@ -93,7 +93,7 @@ class Top10FloatHolders(object):
             df['ann_date'] = pd.to_datetime(df['ann_date'], format = '%Y%m%d')
             df['end_date'] = pd.to_datetime(df['end_date'], format = '%Y%m%d')
             df.sort_values(by = 'end_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s 前十大流通股东数据: %s -- %s' % (self.stock_code, start_date, end_date))
+            logging.info(colorama.Fore.YELLOW + '下载 %s 前十大流通股东数据: %s -- %s, 共 %s 条' % (self.stock_code, start_date, end_date, df.shape[0]))
         else:
             logging.info(colorama.Fore.YELLOW + '%s 前十大流通股东数据: %s -- %s 无数据' % (self.stock_code, start_date, end_date))
         return df
@@ -107,7 +107,7 @@ class Top10FloatHolders(object):
             end_date: date = start_date
             last_trade_day = StockData().trade_calendar.latest_trade_day()
             df_list: List[pd.DataFrame] = [self.dataframe]
-            step_days = timedelta(days = 365)
+            step_days = timedelta(days = 3650)
 
             while start_date <= last_trade_day:
                 end_date = start_date + step_days

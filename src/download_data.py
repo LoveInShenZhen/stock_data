@@ -39,34 +39,44 @@ logging.basicConfig(
 
 
 def test():
-    # StockData().zz500.update()
-    # StockData().hs300.update()
+    StockData().stock_basic.update()
+    StockData().stock_company.update()
+    StockData().zz500.update()
+    StockData().hs300.update()
 
-    # StockDaily(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # Stock5min(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # AdjFactor(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # MoneyFlow(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # Top10Holders(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # Top10FloatHolders(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # StkHolderNumber(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # StkHolderTrade(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # PledgeStat(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # PledgeDetail(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-    # Suspend(data_dir = StockData().data_dir, stock_code = '300059.SZ').update()
-
-    # StockTopList(data_dir = StockData().data_dir).update()
-    # StockTopInst(data_dir = StockData().data_dir).update()
-    # BlockTrade(data_dir = StockData().data_dir).update()
-    # StockConcept(data_dir = StockData().data_dir).update()
-    # StockMargin(data_dir = StockData().data_dir).update()
-    # StockMarginDetail(data_dir = StockData().data_dir).update()
-    # StockIndustry(data_dir = StockData().data_dir).update()
-    # IndexBasic(data_dir = StockData().data_dir).update()
+    StockTopList(data_dir = StockData().data_dir).update()
+    StockTopInst(data_dir = StockData().data_dir).update()
+    BlockTrade(data_dir = StockData().data_dir).update()
+    StockConcept(data_dir = StockData().data_dir).update()
+    StockMargin(data_dir = StockData().data_dir).update()
+    StockMarginDetail(data_dir = StockData().data_dir).update()
+    StockIndustry(data_dir = StockData().data_dir).update()
+    IndexBasic(data_dir = StockData().data_dir).update()
 
     for index_code in StockData().index_basic.default_index_pool():
         IndexDaily(data_dir = StockData().data_dir, index_code = index_code).update()
 
+    for stock_code in StockData().hs300.stock_codes():
+        update_for_stock(stock_code)
+
+    for stock_code in StockData().zz500.stock_codes():
+        update_for_stock(stock_code)
+
     logging.info(colorama.Fore.YELLOW + '更新完毕')
+
+
+def update_for_stock(stock_code: str):
+    StockDaily(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    Stock5min(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    AdjFactor(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    MoneyFlow(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    Top10Holders(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    Top10FloatHolders(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    StkHolderNumber(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    StkHolderTrade(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    PledgeStat(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    PledgeDetail(data_dir = StockData().data_dir, stock_code = stock_code).update()
+    Suspend(data_dir = StockData().data_dir, stock_code = stock_code).update()
 
 
 if __name__ == '__main__':

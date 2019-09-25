@@ -116,6 +116,7 @@ class IndexDaily(object):
                             self.index_name, str(start_date), str(end_date)))
 
                     df_list.append(df)
+
                 start_date = end_date + timedelta(days = 1)
 
             self.dataframe = pd.concat(df_list).drop_duplicates()
