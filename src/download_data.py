@@ -6,6 +6,8 @@ from datetime import date
 
 import colorama
 
+from datetime import datetime, timedelta
+
 from sz.stock_data.index.index_basic import IndexBasic
 from sz.stock_data.index.index_daily import IndexDaily
 from sz.stock_data.market.block_trade import BlockTrade
@@ -39,6 +41,7 @@ logging.basicConfig(
 
 
 def test():
+    start_time = datetime.now()
     StockData().stock_basic.update()
     StockData().stock_company.update()
     StockData().zz500.update()
@@ -79,6 +82,9 @@ def test():
     #     update_for_stock(stock_code)
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
+    end_time = datetime.now()
+
+    logging.info(colorama.Fore.YELLOW + '本次更新总共耗时: %s' % (end_time - start_time))
 
 
 def update_for_stock(stock_code: str):
