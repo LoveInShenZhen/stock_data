@@ -39,5 +39,6 @@ logging.basicConfig(
 
 stock_code = '300059.SZ'
 
-# PledgeDetail(data_dir = StockData().data_dir, stock_code = stock_code).update()
-StkHolderNumber(data_dir = StockData().data_dir, stock_code = stock_code).update()
+stock = Stock5min(data_dir = '/Volumes/USBDATA/stock_data', stock_code = '000538.SZ')
+stock.prepare()
+print(stock.should_update())

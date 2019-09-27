@@ -77,6 +77,15 @@ class StockBasic(object):
         self.prepare()
         return self.dataframe.loc[ts_code].loc['list_date'].date()
 
+    def name_of(self, ts_code: str) -> str:
+        """
+        返回指定证券的名称
+        :param ts_code:
+        :return:
+        """
+        self.prepare()
+        return self.dataframe.loc[ts_code].loc['name']
+
     @staticmethod
     @ts_rate_limiter
     def ts_stock_basic() -> pd.DataFrame:

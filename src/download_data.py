@@ -56,11 +56,27 @@ def test():
     for index_code in StockData().index_basic.default_index_pool():
         IndexDaily(data_dir = StockData().data_dir, index_code = index_code).update()
 
-    for stock_code in StockData().hs300.stock_codes():
-        update_for_stock(stock_code)
+    stock_list = []
+    stock_list.extend(StockData().hs300.stock_codes())
+    stock_list.extend(StockData().zz500.stock_codes())
 
-    for stock_code in StockData().zz500.stock_codes():
+    total_count = len(stock_list)
+    finished_count = 0
+
+    for stock_code in stock_list:
         update_for_stock(stock_code)
+        finished_count += 1
+        logging.debug(colorama.Fore.LIGHTGREEN_EX + '股票 %s 更新完毕, 进度: (%s/%s) %.2f %%' %
+                      (StockData().stock_basic.name_of(ts_code = stock_code),
+                       finished_count,
+                       total_count,
+                       finished_count / total_count * 100))
+
+    # for stock_code in StockData().hs300.stock_codes():
+    #     update_for_stock(stock_code)
+    #
+    # for stock_code in StockData().zz500.stock_codes():
+    #     update_for_stock(stock_code)
 
     logging.info(colorama.Fore.YELLOW + '更新完毕')
 
