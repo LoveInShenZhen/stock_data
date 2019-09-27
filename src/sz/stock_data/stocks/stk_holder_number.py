@@ -77,7 +77,7 @@ class StkHolderNumber(object):
         if self.dataframe.empty:
             return StockData().stock_basic.list_date_of(self.stock_code)
         else:
-            return self.dataframe.iloc[-1].loc['end_date'].date() + timedelta(days = 1)
+            return self.dataframe.iloc[-1].loc['ann_date'].date() + timedelta(days = 1)
 
     @ts_rate_limiter
     def ts_top10_holders(self, start_date: date, end_date: date) -> pd.DataFrame:
