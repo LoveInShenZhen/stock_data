@@ -92,7 +92,7 @@ class MoneyFlow(object):
         df['trade_date'] = pd.to_datetime(df['trade_date'], format = '%Y%m%d')
         df.set_index(keys = 'trade_date', drop = False, inplace = True)
         df.sort_index(inplace = True)
-        logging.info(colorama.Fore.YELLOW + '下载 %s 个股资金流向数据: %s -- %s' % (self.stock_code, start_date, end_date))
+        logging.info(colorama.Fore.YELLOW + '下载 %s 个股资金流向数据: %s -- %s 共 %s 条' % (self.stock_code, start_date, end_date, df.shape[0]))
         return df
 
     def update(self):

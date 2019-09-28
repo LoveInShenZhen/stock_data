@@ -79,7 +79,7 @@ class PledgeStat(object):
         if not df.empty:
             df['end_date'] = df['end_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'end_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s [股权质押统计] 数据' % self.stock_code)
+            logging.info(colorama.Fore.YELLOW + '下载 %s [股权质押统计] 数据 共 %s 条' % (self.stock_code, df.shape[0]))
         else:
             logging.info(colorama.Fore.YELLOW + '%s [股权质押统计] 无最新数据' % self.stock_code)
         return df

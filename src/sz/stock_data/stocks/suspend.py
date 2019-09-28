@@ -77,7 +77,7 @@ class Suspend(object):
             df['resume_date'] = df['resume_date'].apply(lambda x: to_datetime64(x))
             df['ann_date'] = df['ann_date'].apply(lambda x: to_datetime64(x))
             df.sort_values(by = 'ann_date', inplace = True)
-            logging.info(colorama.Fore.YELLOW + '下载 %s [停复牌信息] 数据' % self.stock_code)
+            logging.info(colorama.Fore.YELLOW + '下载 %s [停复牌信息] 数据 共 %s 条' % (self.stock_code, df.shape[0]))
         else:
             logging.info(colorama.Fore.YELLOW + '%s [停复牌信息] 数据: 无数据' % self.stock_code)
         return df

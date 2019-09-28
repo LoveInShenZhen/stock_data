@@ -111,8 +111,8 @@ class StockDaily(object):
                     df['is_open'] = df['isST'].apply(lambda x: str(x) == '1')
                     df['code'] = df['code'].apply(lambda x: ts_code(x))
                     df.set_index(keys = 'date', drop = False, inplace = True)
-                    logging.debug(
-                        colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s' % (self.stock_code, str(start_date), str(end_date)))
+                    logging.debug(colorama.Fore.YELLOW + '下载 [%s 日线] 数据, 从 %s 到 %s 共 %s 条' %
+                                  (self.stock_code, start_date, end_date, df.shape[0]))
 
                     df_list.append(df)
 

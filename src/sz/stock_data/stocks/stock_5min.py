@@ -121,9 +121,8 @@ class Stock5min(object):
                     df_5min['volume'] = df_5min['volume'].astype(np.float64)
                     df_5min['amount'] = df_5min['amount'].astype(np.float64)
                     df_5min.set_index(keys = 'time', drop = False, inplace = True)
-                    logging.debug(
-                        colorama.Fore.YELLOW + '下载 %s 5min 线数据, 从 %s 到 %s' % (
-                            self.stock_code, str(start_date), str(end_date)))
+                    logging.debug(colorama.Fore.YELLOW + '下载 %s 5min 线数据, 从 %s 到 %s 共 %s 条' %
+                                  (self.stock_code, start_date, end_date, df_5min.shape[0]))
 
                     df_list.append(df_5min)
 
